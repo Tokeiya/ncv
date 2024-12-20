@@ -7,3 +7,4 @@ edition = "2024"
 serde_json = "*"
 serde = { version = "*", features = ["derive"] }
 thiserror = "*"
+dirs = "*"
