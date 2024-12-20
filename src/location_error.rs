@@ -7,10 +7,8 @@ pub enum LocationError {
 	IoError(#[from] io::Error),
 	#[error("Unexpected OS")]
 	UnexpectedOs,
-	#[error("Folder not found")]
-	FolderNotFound(#[from] String),
-	#[error("Data local dir not found")]
-	DataLocalDirNotFound,
-	#[error("Home dir not found")]
-	HomeDirNotFound,
+	#[error("Folder {} not found",.0)]
+	FolderNotFound(String),
+	#[error("platform.json not found")]
+	ConfigNotFound,
 }

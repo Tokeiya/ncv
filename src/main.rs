@@ -3,12 +3,10 @@ mod location_resolver;
 mod platform;
 mod platform_load_error;
 
-use dirs;
-
 fn main() {
-	let local = dirs::data_local_dir();
-	println!("{:?}", &local);
+	let a = location_resolver::get_folder();
+	println!("{a:?}");
 
-	let home = dirs::home_dir();
-	println!("{:?}", home);
+	println!("{:?}", location_resolver::get_config_path());
+	println!("{:?}", location_resolver::get_node_path());
 }
