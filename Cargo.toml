@@ -8,3 +8,4 @@ serde_json = "*"
 serde = { version = "*", features = ["derive"] }
 thiserror = "*"
 dirs = "*"
+clap = "*"
