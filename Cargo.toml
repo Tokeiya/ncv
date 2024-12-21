@@ -8,4 +8,7 @@ serde_json = "*"
 serde = { version = "*", features = ["derive"] }
 thiserror = "*"
 dirs = "*"
-clap = "*"
+clap = { version = "*", features = ["derive"] }
+combine = "*"
+regex = "*"
+once_cell = "*"
