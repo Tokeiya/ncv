@@ -9,6 +9,5 @@ serde = { version = "*", features = ["derive"] }
 thiserror = "*"
 dirs = "*"
 clap = { version = "*", features = ["derive"] }
-combine = "*"
 regex = "*"
-once_cell = "*"
+num-bigint = "*"
