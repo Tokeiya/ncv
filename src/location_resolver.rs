@@ -4,20 +4,33 @@ use std::ffi::OsStr;
 use std::fs;
 use std::path::PathBuf;
 
-#[cfg(target_os = "windows")]
-const PLAT_FORM_PATH: &str = r#"tools\user\platform.json"#;
+//node cache
+//C:\Users\net_s\AppData\Local\Volta\tools\inventory\node
+
+//image
+//C:\Users\net_s\AppData\Local\Volta\tools\image\node
 
 #[cfg(target_os = "windows")]
-const NODE_DIR_PATH: &str = r#"tools\image\node\"#;
+mod paths {
+	pub const PLATFORM: &str = r#"tools\user\platform.json"#;
+	pub const NODE_IMAGE_DIR: &str = r#"tools\image\node\"#;
+	pub const NODE_INVENTORY_DIR: &str = r#"tools\inventory\node\"#;
+}
 
 #[cfg(any(target_os = "linux", target_os = "macos"))]
-const PLAT_FORM_PATH: &str = r#"tools/user/platform.json"#;
+mod paths {
+	pub const PLATFORM: &str = r#"tools/user/platform.json"#;
+	pub const NODE_IMAGE_DIR: &str = r#"tools/image/node/"#;
+	pub const NODE_INVENTORY_DIR: &str = r#"tools/inventory/node/"#;
+}
 
-#[cfg(any(target_os = "linux", target_os = "macos"))]
-const NODE_DIR_PATH: &str = r#"tools/image/node/"#;
-
-fn check_exists(path: &OsStr) -> Result<bool, LocationError> {
-	Ok(fs::exists(path)?)
+fn check_exists(path: PathBuf) -> Result<PathBuf, LocationError> {
+	if !fs::exists(path.as_path())? {
+		let path = path.to_str().map_or("N/A", |x| x).to_string();
+		Err(LocationError::FolderNotFound(path))
+	} else {
+		Ok(path)
+	}
 }
 
 fn windows_proc() -> Result<PathBuf, LocationError> {
@@ -26,17 +39,7 @@ fn windows_proc() -> Result<PathBuf, LocationError> {
 	))?;
 
 	dir.push(r#"Volta\"#);
-	if !check_exists(dir.as_os_str())? {
-		let path = if let Some(p) = dir.to_str() {
-			p.to_string()
-		} else {
-			"N/A".to_string()
-		};
-
-		Err(LocationError::FolderNotFound(path))
-	} else {
-		Ok(dir)
-	}
+	check_exists(dir)
 }
 
 fn linux_proc() -> Result<PathBuf, LocationError> {
@@ -60,7 +63,7 @@ fn mac_proc() -> Result<PathBuf, LocationError> {
 	linux_proc()
 }
 
-pub fn get_folder() -> Result<PathBuf, LocationError> {
+pub fn volta_folder() -> Result<PathBuf, LocationError> {
 	if cfg!(target_os = "windows") {
 		windows_proc()
 	} else if cfg!(target_os = "linux") {
@@ -72,9 +75,9 @@ pub fn get_folder() -> Result<PathBuf, LocationError> {
 	}
 }
 
-pub fn get_config_path() -> Result<PathBuf, LocationError> {
-	let mut path = get_folder()?;
-	path.push(PLAT_FORM_PATH);
+pub fn platform_path() -> Result<PathBuf, LocationError> {
+	let mut path = volta_folder()?;
+	path.push(paths::PLATFORM);
 
 	if !fs::exists(path.as_path())? {
 		Err(LocationError::ConfigNotFound)
@@ -83,14 +86,16 @@ pub fn get_config_path() -> Result<PathBuf, LocationError> {
 	}
 }
 
-pub fn get_node_path() -> Result<PathBuf, LocationError> {
-	let mut path = get_folder()?;
-	path.push(NODE_DIR_PATH);
+pub fn node_inventory_path() -> Result<PathBuf, LocationError> {
+	let mut path = volta_folder()?;
+	path.push(paths::NODE_INVENTORY_DIR);
 
-	if !fs::exists(path.as_path())? {
-		let path = path.to_str().map_or("N/A", |x| x).to_string();
-		Err(LocationError::FolderNotFound(path))
-	} else {
-		Ok(path)
-	}
+	check_exists(path)
+}
+
+pub fn node_image_path() -> Result<PathBuf, LocationError> {
+	let mut path = volta_folder()?;
+	path.push(paths::NODE_IMAGE_DIR);
+
+	check_exists(path)
 }
