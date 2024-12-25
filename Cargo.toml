@@ -1,0 +1,10 @@
+[package]
+name = "ncv"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+dirs = "*"
+clap = "*"
+combine = { version = "*", features = ["std"] }
+mockall = "*"
