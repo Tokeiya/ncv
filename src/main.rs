@@ -10,12 +10,12 @@ use clap::Parser;
 use regex;
 use std::error::Error;
 use std::fs;
-
+use std::num::ParseIntError;
 fn main() {
 	let a = "110";
 	let b = "20";
 
-	println!("{:?}", a.cmp(b))
+	let b = a.parse::<u64>();
 }
 
 fn remove_node(version: String) -> Result<(), String> {

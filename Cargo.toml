@@ -10,4 +10,5 @@ thiserror = "*"
 dirs = "*"
 clap = { version = "*", features = ["derive"] }
 regex = "*"
-num-bigint = "*"
+combine = "*"
+
