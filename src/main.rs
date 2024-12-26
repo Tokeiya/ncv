@@ -1,9 +1,8 @@
-mod eq_test;
-mod partial_ord_test;
+mod test_helper;
 mod version;
 mod version_element;
 
-use combine::{self as cmb, parser as psr, parser::char as chr, parser::combinator};
+use combine::{self as cmb, parser::char as chr};
 use std::io;
 
 use combine::{EasyParser, stream::easy::Stream as EasyStream};

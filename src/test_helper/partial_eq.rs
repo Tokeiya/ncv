@@ -1,35 +1,32 @@
-#[cfg(test)]
-pub mod equality_tests {
 
-	pub fn equality_test<T: PartialEq>(x: &T, y: &T, z: &T, not_eq: &T) {
-		reflexive_test(x, y);
-		symmetry_test(x);
-		transitive_test(x, y, z);
-		not_equality_test(x, not_eq);
-	}
-	pub fn reflexive_test<T: PartialEq>(x: &T, y: &T) {
-		assert!(x == y);
-		assert!(y == x);
-	}
+pub fn equality_test<T: PartialEq>(x: &T, y: &T, z: &T, not_eq: &T) {
+	reflexive_test(x, y);
+	symmetry_test(x);
+	transitive_test(x, y, z);
+	not_equality_test(x, not_eq);
+}
+pub fn reflexive_test<T: PartialEq>(x: &T, y: &T) {
+	assert!(x == y);
+	assert!(y == x);
+}
 
-	pub fn symmetry_test<T: PartialEq>(x: &T) {
-		assert!(x.eq(x));
-	}
+pub fn symmetry_test<T: PartialEq>(x: &T) {
+	assert!(x.eq(x));
+}
 
-	pub fn transitive_test<T: PartialEq>(x: &T, y: &T, z: &T) {
-		assert!(x == y);
-		assert!(y == z);
-		assert!(x == z);
-	}
+pub fn transitive_test<T: PartialEq>(x: &T, y: &T, z: &T) {
+	assert!(x == y);
+	assert!(y == z);
+	assert!(x == z);
+}
 
-	pub fn not_equality_test<T: PartialEq>(x: &T, other: &T) {
-		assert!(x != other)
-	}
+pub fn not_equality_test<T: PartialEq>(x: &T, other: &T) {
+	assert!(x != other)
 }
 
 #[cfg(test)]
 pub mod test {
-	use super::equality_tests::*;
+	use super::*;
 	use mockall::mock;
 
 	mock! {
