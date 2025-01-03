@@ -3,8 +3,13 @@ name = "ncv"
 version = "0.1.0"
 edition = "2024"
 
+[dev-dependencies]
+eq_ord_tester = { path = "../eq_ord_tester" }
+
+
 [dependencies]
 dirs = "*"
 clap = "*"
 combine = { version = "*", features = ["std"] }
 mockall = "*"
+
