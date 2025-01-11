@@ -1,7 +1,5 @@
-use super::version_element::Element;
-
-pub struct Version {
-    major: u64,
-    minor: Element,
-    revision: Element,
-}
+pub mod element;
+mod parse_error;
+mod partial;
+mod spcified;
+pub mod strict_element;
