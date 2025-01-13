@@ -78,6 +78,7 @@ impl FromStr for Pivot {
 				.as_str()
 				.parse::<u64>()
 				.map_err(|_| ParseError::from(s))?;
+			
 			Ok(Pivot::new(
 				SpecifiedElement::from(major),
 				Element::Any,
@@ -90,12 +91,14 @@ impl FromStr for Pivot {
 				.as_str()
 				.parse::<u64>()
 				.map_err(|_| ParseError::from(s))?;
+
 			let minor = cap
 				.get(2)
 				.unwrap()
 				.as_str()
 				.parse::<u64>()
 				.map_err(|_| ParseError::from(s))?;
+
 			Ok(Pivot::new(
 				SpecifiedElement::from(major),
 				Element::from(minor),
@@ -108,12 +111,14 @@ impl FromStr for Pivot {
 				.as_str()
 				.parse::<u64>()
 				.map_err(|_| ParseError::from(s))?;
+
 			let minor = cap
 				.get(2)
 				.unwrap()
 				.as_str()
 				.parse::<u64>()
 				.map_err(|_| ParseError::from(s))?;
+
 			let patch = cap
 				.get(3)
 				.unwrap()
