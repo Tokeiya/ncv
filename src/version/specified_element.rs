@@ -182,6 +182,7 @@ mod test {
 	#[test]
 	fn from_u64() {
 		let fixture = SpecifiedElement::from(42);
+		assert_eq!(fixture.0, 42);
 	}
 	#[test]
 	fn eq() {
