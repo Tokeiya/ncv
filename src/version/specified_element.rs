@@ -3,35 +3,35 @@ use std::cmp::Ordering;
 use std::fmt::{Display, Formatter};
 
 #[derive(Debug, Ord, PartialOrd, Eq, PartialEq)]
-pub struct StrictElement(u64);
+pub struct SpecifiedElement(u64);
 
-impl From<u64> for StrictElement {
+impl From<u64> for SpecifiedElement {
 	fn from(value: u64) -> Self {
-		StrictElement(value)
+		SpecifiedElement(value)
 	}
 }
 
-impl TryFrom<&str> for StrictElement {
+impl TryFrom<&str> for SpecifiedElement {
 	type Error = std::num::ParseIntError;
 
 	fn try_from(value: &str) -> Result<Self, Self::Error> {
-		Ok(StrictElement(value.parse()?))
+		Ok(SpecifiedElement(value.parse()?))
 	}
 }
 
-impl Display for StrictElement {
+impl Display for SpecifiedElement {
 	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
 		Ok(write!(f, "{}", self.0)?)
 	}
 }
 
-impl StrictElement {
+impl SpecifiedElement {
 	pub fn value(&self) -> u64 {
 		self.0
 	}
 }
 
-impl PartialEq<Element> for StrictElement {
+impl PartialEq<Element> for SpecifiedElement {
 	fn eq(&self, other: &Element) -> bool {
 		match other {
 			Element::Specified(other) => self == other,
@@ -40,7 +40,7 @@ impl PartialEq<Element> for StrictElement {
 	}
 }
 
-impl PartialOrd<Element> for StrictElement {
+impl PartialOrd<Element> for SpecifiedElement {
 	fn partial_cmp(&self, other: &Element) -> Option<Ordering> {
 		match other {
 			Element::Specified(other) => self.partial_cmp(other),
@@ -85,8 +85,8 @@ mod test {
 
 	#[test]
 	fn element_partial_eq() {
-		let fixture = StrictElement(42);
-		let tgt = Element::Specified(StrictElement(42));
+		let fixture = SpecifiedElement(42);
+		let tgt = Element::Specified(SpecifiedElement(42));
 
 		assert_eq!(fixture, tgt);
 		assert_eq!(tgt, fixture);
@@ -96,14 +96,14 @@ mod test {
 		assert_eq!(any, fixture);
 		assert_eq!(fixture, any);
 
-		let ne = Element::Specified(StrictElement(43));
+		let ne = Element::Specified(SpecifiedElement(43));
 		assert_ne!(ne, fixture);
 		assert_ne!(fixture, ne);
 	}
 
 	#[test]
 	fn element_partial_ord() {
-		let fixture = StrictElement(42);
+		let fixture = SpecifiedElement(42);
 		let less = Element::from(41);
 		let greater = Element::from(43);
 		let equal = Element::from(42);
@@ -117,7 +117,7 @@ mod test {
 
 	#[test]
 	fn ge() {
-		let fixture = StrictElement(42);
+		let fixture = SpecifiedElement(42);
 		let less = Element::from(41);
 		let greater = Element::from(43);
 		let equal = Element::from(42);
@@ -131,7 +131,7 @@ mod test {
 
 	#[test]
 	fn gt() {
-		let fixture = StrictElement(42);
+		let fixture = SpecifiedElement(42);
 		let less = Element::from(41);
 		let greater = Element::from(43);
 		let equal = Element::from(42);
@@ -145,7 +145,7 @@ mod test {
 
 	#[test]
 	fn le() {
-		let fixture = StrictElement(42);
+		let fixture = SpecifiedElement(42);
 		let less = Element::from(41);
 		let greater = Element::from(43);
 		let equal = Element::from(42);
@@ -159,7 +159,7 @@ mod test {
 
 	#[test]
 	fn lt() {
-		let fixture = StrictElement(42);
+		let fixture = SpecifiedElement(42);
 		let less = Element::from(41);
 		let greater = Element::from(43);
 		let equal = Element::from(42);
@@ -173,49 +173,53 @@ mod test {
 
 	#[test]
 	fn try_from_str() {
-		let fixture = StrictElement::try_from("42").unwrap();
+		let fixture = SpecifiedElement::try_from("42").unwrap();
 		assert_eq!(fixture.0, 42);
 
-		assert!(StrictElement::try_from("4 3").is_err())
+		assert!(SpecifiedElement::try_from("4 3").is_err())
 	}
 
 	#[test]
 	fn from_u64() {
-		let fixture = StrictElement::from(42);
+		let fixture = SpecifiedElement::from(42);
 	}
 	#[test]
 	fn eq() {
-		symmetric_test(StrictElement(42), StrictElement(42));
-		reflexive_test(StrictElement(42));
-		transitive_test(StrictElement(42), StrictElement(42), StrictElement(42));
-		not_eq_test(StrictElement(42), StrictElement(43));
+		symmetric_test(SpecifiedElement(42), SpecifiedElement(42));
+		reflexive_test(SpecifiedElement(42));
+		transitive_test(
+			SpecifiedElement(42),
+			SpecifiedElement(42),
+			SpecifiedElement(42),
+		);
+		not_eq_test(SpecifiedElement(42), SpecifiedElement(43));
 	}
 
 	#[test]
 	fn ord() {
 		simple_ord_test(
-			StrictElement(42),
-			StrictElement(43),
-			StrictElement(41),
-			StrictElement(42),
+			SpecifiedElement(42),
+			SpecifiedElement(43),
+			SpecifiedElement(41),
+			SpecifiedElement(42),
 		)
 	}
 
 	#[test]
 	fn debug() {
-		let fixture = StrictElement(42);
-		assert_eq!(format!("{fixture:?}"), "StrictElement(42)");
+		let fixture = SpecifiedElement(42);
+		assert_eq!(format!("{fixture:?}"), "SpecifiedElement(42)");
 	}
 
 	#[test]
 	fn display() {
-		let fixture = StrictElement(42);
+		let fixture = SpecifiedElement(42);
 		assert_eq!(format!("{fixture}"), "42");
 	}
 
 	#[test]
 	fn value() {
-		let fixture = StrictElement(42);
+		let fixture = SpecifiedElement(42);
 		assert_eq!(fixture.value(), 42);
 	}
 }

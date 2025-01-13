@@ -1,5 +1,5 @@
 use super::parse_error::ParseError;
-use super::strict_element::StrictElement;
+use super::specified_element::SpecifiedElement;
 use regex::Regex;
 use std::fmt::{Display, Formatter};
 use std::str::FromStr;
@@ -7,9 +7,9 @@ use std::sync::LazyLock;
 
 #[derive(Debug)]
 pub struct Specified {
-	major: StrictElement,
-	minor: StrictElement,
-	patch: StrictElement,
+	major: SpecifiedElement,
+	minor: SpecifiedElement,
+	patch: SpecifiedElement,
 }
 
 impl Display for Specified {
@@ -19,7 +19,7 @@ impl Display for Specified {
 }
 
 impl Specified {
-	pub fn new(major: StrictElement, minor: StrictElement, patch: StrictElement) -> Self {
+	pub fn new(major: SpecifiedElement, minor: SpecifiedElement, patch: SpecifiedElement) -> Self {
 		Self {
 			major,
 			minor,
@@ -70,9 +70,9 @@ impl FromStr for Specified {
 				.map_err(|_| ParseError::from(s))?;
 
 			Ok(Specified::new(
-				StrictElement::from(major),
-				StrictElement::from(minor),
-				StrictElement::from(patch),
+				SpecifiedElement::from(major),
+				SpecifiedElement::from(minor),
+				SpecifiedElement::from(patch),
 			))
 		} else {
 			Err(ParseError::from(s))
@@ -86,9 +86,9 @@ mod tests {
 
 	fn fixture() -> Specified {
 		Specified::new(
-			StrictElement::from(12),
-			StrictElement::from(345),
-			StrictElement::from(6789),
+			SpecifiedElement::from(12),
+			SpecifiedElement::from(345),
+			SpecifiedElement::from(6789),
 		)
 	}
 
@@ -96,9 +96,9 @@ mod tests {
 	fn new() {
 		let actual = fixture();
 		let expected = Specified {
-			major: StrictElement::from(12),
-			minor: StrictElement::from(345),
-			patch: StrictElement::from(6789),
+			major: SpecifiedElement::from(12),
+			minor: SpecifiedElement::from(345),
+			patch: SpecifiedElement::from(6789),
 		};
 
 		assert_eq!(actual.major, expected.major);
@@ -150,7 +150,7 @@ mod tests {
 	fn debug() {
 		assert_eq!(
 			format!("{:?}", fixture()),
-			"Specified { major: StrictElement(12), minor: StrictElement(345), patch: StrictElement(6789) }"
+			"Specified { major: SpecifiedElement(12), minor: SpecifiedElement(345), patch: SpecifiedElement(6789) }"
 		);
 	}
 

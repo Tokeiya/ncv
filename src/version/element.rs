@@ -1,16 +1,16 @@
-use super::strict_element::StrictElement;
+use super::specified_element::SpecifiedElement;
 use std::cmp::Ordering;
 use std::fmt::{Display, Formatter};
 
 #[derive(Debug)]
 pub enum Element {
-	Specified(StrictElement),
+	Specified(SpecifiedElement),
 	Any,
 }
 
 impl From<u64> for Element {
 	fn from(value: u64) -> Self {
-		Element::Specified(StrictElement::from(value))
+		Element::Specified(SpecifiedElement::from(value))
 	}
 }
 
@@ -18,12 +18,12 @@ impl TryFrom<&str> for Element {
 	type Error = std::num::ParseIntError;
 
 	fn try_from(value: &str) -> Result<Self, Self::Error> {
-		Ok(Element::Specified(StrictElement::try_from(value)?))
+		Ok(Element::Specified(SpecifiedElement::try_from(value)?))
 	}
 }
 
-impl PartialEq<StrictElement> for Element {
-	fn eq(&self, other: &StrictElement) -> bool {
+impl PartialEq<SpecifiedElement> for Element {
+	fn eq(&self, other: &SpecifiedElement) -> bool {
 		match self {
 			Element::Specified(elem) => elem == other,
 			Element::Any => true,
@@ -54,36 +54,36 @@ impl Element {
 	}
 }
 
-impl PartialOrd<StrictElement> for Element {
-	fn partial_cmp(&self, other: &StrictElement) -> Option<Ordering> {
+impl PartialOrd<SpecifiedElement> for Element {
+	fn partial_cmp(&self, other: &SpecifiedElement) -> Option<Ordering> {
 		match self {
 			Element::Specified(x) => x.partial_cmp(other),
 			Element::Any => None,
 		}
 	}
 
-	fn ge(&self, other: &StrictElement) -> bool {
+	fn ge(&self, other: &SpecifiedElement) -> bool {
 		match self {
 			Element::Specified(x) => x.ge(other),
 			Element::Any => true,
 		}
 	}
 
-	fn gt(&self, other: &StrictElement) -> bool {
+	fn gt(&self, other: &SpecifiedElement) -> bool {
 		match self {
 			Element::Specified(x) => x.gt(other),
 			Element::Any => true,
 		}
 	}
 
-	fn le(&self, other: &StrictElement) -> bool {
+	fn le(&self, other: &SpecifiedElement) -> bool {
 		match self {
 			Element::Specified(x) => x.le(other),
 			Element::Any => true,
 		}
 	}
 
-	fn lt(&self, other: &StrictElement) -> bool {
+	fn lt(&self, other: &SpecifiedElement) -> bool {
 		match self {
 			Element::Specified(x) => x.lt(other),
 			Element::Any => true,
@@ -93,7 +93,7 @@ impl PartialOrd<StrictElement> for Element {
 
 #[cfg(test)]
 mod test {
-	use super::super::strict_element::StrictElement;
+	use super::super::specified_element::SpecifiedElement;
 	use super::*;
 	#[test]
 	fn from_u64() {
@@ -115,7 +115,7 @@ mod test {
 	#[test]
 	fn debug() {
 		let fixture = Element::from(42);
-		assert_eq!(format!("{:?}", fixture), "Specified(StrictElement(42))");
+		assert_eq!(format!("{:?}", fixture), "Specified(SpecifiedElement(42))");
 		assert_eq!(format!("{:?}", Element::Any), "Any");
 	}
 
@@ -151,7 +151,7 @@ mod test {
 	#[test]
 	fn partial_eq() {
 		let fixture = Element::from(42);
-		let eq = StrictElement::from(42);
+		let eq = SpecifiedElement::from(42);
 
 		assert_eq!(fixture, eq);
 		assert_eq!(eq, fixture);
@@ -168,9 +168,9 @@ mod test {
 	#[test]
 	fn partial_ord() {
 		let fixture = Element::from(42);
-		let less = StrictElement::from(41);
-		let greater = StrictElement::from(43);
-		let equal = StrictElement::from(42);
+		let less = SpecifiedElement::from(41);
+		let greater = SpecifiedElement::from(43);
+		let equal = SpecifiedElement::from(42);
 
 		assert!(matches!(fixture.partial_cmp(&less), Some(act) if act == Ordering::Greater));
 		assert!(matches!(fixture.partial_cmp(&greater), Some(act) if act == Ordering::Less));
@@ -183,9 +183,9 @@ mod test {
 	#[test]
 	fn ge() {
 		let fixture = Element::from(42);
-		let less = StrictElement::from(41);
-		let greater = StrictElement::from(43);
-		let equal = StrictElement::from(42);
+		let less = SpecifiedElement::from(41);
+		let greater = SpecifiedElement::from(43);
+		let equal = SpecifiedElement::from(42);
 
 		assert!(fixture.ge(&less));
 		assert!(fixture.ge(&equal));
@@ -198,9 +198,9 @@ mod test {
 	#[test]
 	fn gt() {
 		let fixture = Element::from(42);
-		let less = StrictElement::from(41);
-		let greater = StrictElement::from(43);
-		let equal = StrictElement::from(42);
+		let less = SpecifiedElement::from(41);
+		let greater = SpecifiedElement::from(43);
+		let equal = SpecifiedElement::from(42);
 
 		assert!(fixture.gt(&less));
 		assert!(!fixture.gt(&equal));
@@ -213,9 +213,9 @@ mod test {
 	#[test]
 	fn le() {
 		let fixture = Element::from(42);
-		let less = StrictElement::from(41);
-		let greater = StrictElement::from(43);
-		let equal = StrictElement::from(42);
+		let less = SpecifiedElement::from(41);
+		let greater = SpecifiedElement::from(43);
+		let equal = SpecifiedElement::from(42);
 
 		assert!(fixture.le(&greater));
 		assert!(fixture.le(&equal));
@@ -228,9 +228,9 @@ mod test {
 	#[test]
 	fn lt() {
 		let fixture = Element::from(42);
-		let less = StrictElement::from(41);
-		let greater = StrictElement::from(43);
-		let equal = StrictElement::from(42);
+		let less = SpecifiedElement::from(41);
+		let greater = SpecifiedElement::from(43);
+		let equal = SpecifiedElement::from(42);
 
 		assert!(fixture.lt(&greater));
 		assert!(!fixture.lt(&equal));
