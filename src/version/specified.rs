@@ -27,16 +27,16 @@ impl Specified {
 		}
 	}
 
-	pub fn major(&self) -> u64 {
-		self.major.value()
+	pub fn major(&self) -> &SpecifiedElement {
+		&self.major
 	}
 
-	pub fn minor(&self) -> u64 {
-		self.minor.value()
+	pub fn minor(&self) -> &SpecifiedElement {
+		&self.minor
 	}
 
-	pub fn patch(&self) -> u64 {
-		self.patch.value()
+	pub fn patch(&self) -> &SpecifiedElement {
+		&self.patch
 	}
 }
 
@@ -233,17 +233,17 @@ mod tests {
 
 	#[test]
 	fn major() {
-		assert_eq!(fixture().major(), 12);
+		assert_eq!(fixture().major().value(), 12)
 	}
 
 	#[test]
 	fn minor() {
-		assert_eq!(fixture().minor(), 345);
+		assert_eq!(fixture().minor().value(), 345);
 	}
 
 	#[test]
 	fn patch() {
-		assert_eq!(fixture().patch(), 6789);
+		assert_eq!(fixture().patch().value(), 6789);
 	}
 
 	#[test]

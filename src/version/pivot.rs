@@ -1,6 +1,8 @@
 use super::element::Element;
 use super::parse_error::ParseError;
 use super::specified_element::SpecifiedElement;
+use crate::version::specified::Specified;
+use std::cmp::Ordering;
 use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 use std::sync::LazyLock;
@@ -136,8 +138,65 @@ impl FromStr for Pivot {
 	}
 }
 
+impl PartialEq<Specified> for Pivot {
+	fn eq(&self, other: &Specified) -> bool {
+		self.major() == other.major()
+			&& self.minor() == other.minor()
+			&& self.patch() == other.patch()
+	}
+}
+
+impl PartialOrd<Specified> for Pivot {
+	fn partial_cmp(&self, other: &Specified) -> Option<Ordering> {
+		let m = self.major().partial_cmp(other.major()).unwrap();
+		let n = self.minor().partial_cmp(other.minor());
+		let p = self.patch().partial_cmp(other.patch());
+
+		match m {
+			Ordering::Less => Some(Ordering::Less),
+			Ordering::Equal => {
+				if let (Some(n), Some(p)) = (n, p) {
+					match n {
+						Ordering::Less => Some(Ordering::Less),
+						Ordering::Equal => Some(p),
+						Ordering::Greater => Some(Ordering::Greater),
+					}
+				} else {
+					None
+				}
+			}
+			Ordering::Greater => Some(Ordering::Greater),
+		}
+	}
+
+	fn ge(&self, other: &Specified) -> bool {
+		if let Some(ord) = self.partial_cmp(other) {
+			match ord {
+				Ordering::Less => false,
+				Ordering::Equal => true,
+				Ordering::Greater => true,
+			}
+		} else {
+			true
+		}
+	}
+
+	fn gt(&self, other: &Specified) -> bool {
+		todo!()
+	}
+
+	fn le(&self, other: &Specified) -> bool {
+		todo!()
+	}
+
+	fn lt(&self, other: &Specified) -> bool {
+		todo!()
+	}
+}
+
 #[cfg(test)]
 mod tests {
+	use super::super::specified::Specified;
 	use super::*;
 
 	fn fixture() -> Pivot {
@@ -151,6 +210,150 @@ mod tests {
 	fn any_fixture() -> Pivot {
 		Pivot::new(SpecifiedElement::from(42), Element::Any, Element::Any)
 	}
+
+	#[test]
+	fn partial_cmp() {
+		let major = Pivot::from_str("42").unwrap();
+		let minor = Pivot::from_str("42.43").unwrap();
+		let patch = fixture();
+
+		//none
+		let bind = Specified::from_str("42.43.44").unwrap();
+		assert!(major.partial_cmp(&bind).is_none());
+		assert!(minor.partial_cmp(&bind).is_none());
+
+		//equal
+		assert_eq!(patch.partial_cmp(&bind), Some(Ordering::Equal));
+
+		//greater
+		let less = Specified::from_str("42.43.43").unwrap();
+		assert_eq!(patch.partial_cmp(&less), Some(Ordering::Greater));
+
+		//less
+		let greater = Specified::from_str("42.43.45").unwrap();
+		assert_eq!(patch.partial_cmp(&greater), Some(Ordering::Less));
+	}
+
+	#[test]
+	fn foo() {
+		let minor = Pivot::from_str("42.43").unwrap();
+
+		dbg!(minor.ge(&Specified::from_str("42.44.90").unwrap()));
+		dbg!(minor.partial_cmp(&Specified::from_str("42.44.90").unwrap()));
+		assert!(!minor.ge(&Specified::from_str("42.44.90").unwrap()));
+	}
+
+	#[test]
+	fn ge() {
+		//42.43.44
+		let major = Pivot::from_str("42").unwrap();
+		let minor = Pivot::from_str("42.43").unwrap();
+		let patch = fixture();
+
+		//equal
+		assert!(patch.ge(&Specified::from_str("42.43.44").unwrap()));
+
+		//greater
+		assert!(patch.ge(&Specified::from_str("42.43.41").unwrap()));
+		assert!(patch.ge(&Specified::from_str("42.42.45").unwrap()));
+		assert!(patch.ge(&Specified::from_str("41.50.60").unwrap()));
+
+		assert!(minor.ge(&Specified::from_str("42.43.90").unwrap()));
+		assert!(minor.ge(&Specified::from_str("42.4.99").unwrap()));
+
+		assert!(major.ge(&Specified::from_str("42.43.43").unwrap()));
+		assert!(major.ge(&Specified::from_str("42.44.90").unwrap()));
+
+		// //less
+		assert!(!patch.ge(&Specified::from_str("42.43.45").unwrap()));
+		assert!(!patch.ge(&Specified::from_str("42.44.44").unwrap()));
+		assert!(!patch.ge(&Specified::from_str("43.43.44").unwrap()));
+
+		assert!(!minor.ge(&Specified::from_str("42.44.90").unwrap()));
+		assert!(!minor.ge(&Specified::from_str("43.4.99").unwrap()));
+
+		assert!(!major.ge(&Specified::from_str("43.900.900").unwrap()));
+	}
+
+	#[test]
+	fn gt() {
+		let major = Pivot::from_str("42").unwrap();
+		let minor = Pivot::from_str("42.43").unwrap();
+		let patch = fixture();
+
+		//great
+		assert!(patch.gt(&Specified::from_str("42.43.43").unwrap()));
+		assert!(patch.gt(&Specified::from_str("42.42.50").unwrap()));
+		assert!(patch.gt(&Specified::from_str("41.43.44").unwrap()));
+
+		assert!(minor.gt(&Specified::from_str("42.42.99").unwrap()));
+		assert!(minor.gt(&Specified::from_str("41.45.46").unwrap()));
+
+		assert!(major.gt(&Specified::from_str("41.50.44").unwrap()));
+
+		//less
+		assert!(!patch.gt(&Specified::from_str("42.43.44").unwrap()));
+		assert!(!patch.gt(&Specified::from_str("42.43.45").unwrap()));
+		assert!(!patch.gt(&Specified::from_str("42.44.44").unwrap()));
+
+		assert!(!minor.gt(&Specified::from_str("42.43.44").unwrap()));
+		assert!(!minor.gt(&Specified::from_str("42.43.45").unwrap()));
+
+		assert!(!major.gt(&Specified::from_str("42.45.46").unwrap()));
+	}
+
+	#[test]
+	fn le() {
+		let major = Pivot::from_str("42").unwrap();
+		let minor = Pivot::from_str("42.43").unwrap();
+		let patch = fixture();
+
+		//equal
+		assert!(patch.le(&Specified::from_str("42.43.44").unwrap()));
+
+		//less
+		assert!(patch.le(&Specified::from_str("42.43.45").unwrap()));
+		assert!(patch.le(&Specified::from_str("42.44.1").unwrap()));
+		assert!(patch.le(&Specified::from_str("43.0.44").unwrap()));
+
+		assert!(minor.le(&Specified::from_str("42.44.0").unwrap()));
+		assert!(minor.le(&Specified::from_str("43.0.0").unwrap()));
+
+		assert!(major.le(&Specified::from_str("43.0.0").unwrap()));
+	}
+
+	#[test]
+	fn lt() {
+		let major = Pivot::from_str("42").unwrap();
+		let minor = Pivot::from_str("42.43").unwrap();
+		let patch = fixture();
+
+		//less
+		assert!(patch.lt(&Specified::from_str("42.43.45").unwrap()));
+		assert!(patch.lt(&Specified::from_str("42.44.0").unwrap()));
+		assert!(patch.lt(&Specified::from_str("43.0.0").unwrap()));
+
+		assert!(minor.lt(&Specified::from_str("42.44.0").unwrap()));
+		assert!(minor.lt(&Specified::from_str("43.0.0").unwrap()));
+
+		assert!(major.lt(&Specified::from_str("43.0.0").unwrap()));
+	}
+
+	#[test]
+	fn specified_partial_eq() {
+		let specified = Specified::from_str("42.43.44").unwrap();
+		assert_eq!(fixture(), specified);
+
+		assert_ne!(fixture(), Specified::from_str("42.43.45").unwrap());
+		assert_ne!(fixture(), Specified::from_str("42.44.43").unwrap());
+
+		assert_ne!(fixture(), Specified::from_str("43.44.44").unwrap());
+		assert_ne!(fixture(), Specified::from_str("43.45.44").unwrap());
+
+		assert_ne!(fixture(), Specified::from_str("43.43.44").unwrap());
+		assert_ne!(fixture(), Specified::from_str("41.43.44").unwrap());
+	}
+
 	#[test]
 	fn new() {
 		let fixture = Pivot::new(
