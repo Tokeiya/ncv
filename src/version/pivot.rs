@@ -78,7 +78,7 @@ impl FromStr for Pivot {
 				.as_str()
 				.parse::<u64>()
 				.map_err(|_| ParseError::from(s))?;
-			
+
 			Ok(Pivot::new(
 				SpecifiedElement::from(major),
 				Element::Any,

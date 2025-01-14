@@ -5,7 +5,7 @@ use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 use std::sync::LazyLock;
 
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq, Ord, PartialOrd)]
 pub struct Specified {
 	major: SpecifiedElement,
 	minor: SpecifiedElement,
@@ -83,6 +83,131 @@ impl FromStr for Specified {
 #[cfg(test)]
 mod tests {
 	use super::*;
+
+	enum Targets {
+		Major,
+		Minor,
+		Patch,
+	}
+
+	fn pivot() -> Specified {
+		Specified::new(
+			SpecifiedElement::from(12),
+			SpecifiedElement::from(345),
+			SpecifiedElement::from(6789),
+		)
+	}
+
+	fn greater(target: Targets) -> Specified {
+		match target {
+			Targets::Major => Specified::new(
+				SpecifiedElement::from(13),
+				SpecifiedElement::from(345),
+				SpecifiedElement::from(6789),
+			),
+			Targets::Minor => Specified::new(
+				SpecifiedElement::from(12),
+				SpecifiedElement::from(346),
+				SpecifiedElement::from(6789),
+			),
+			Targets::Patch => Specified::new(
+				SpecifiedElement::from(12),
+				SpecifiedElement::from(345),
+				SpecifiedElement::from(6790),
+			),
+		}
+	}
+
+	fn less(target: Targets) -> Specified {
+		match target {
+			Targets::Major => Specified::new(
+				SpecifiedElement::from(11),
+				SpecifiedElement::from(345),
+				SpecifiedElement::from(6789),
+			),
+			Targets::Minor => Specified::new(
+				SpecifiedElement::from(12),
+				SpecifiedElement::from(344),
+				SpecifiedElement::from(6789),
+			),
+			Targets::Patch => Specified::new(
+				SpecifiedElement::from(12),
+				SpecifiedElement::from(345),
+				SpecifiedElement::from(6788),
+			),
+		}
+	}
+
+	#[test]
+	fn eq() {
+		assert_eq!(pivot(), pivot());
+		assert_eq!(less(Targets::Major), less(Targets::Major));
+		assert_eq!(greater(Targets::Minor), greater(Targets::Minor));
+
+		assert_ne!(pivot(), greater(Targets::Major));
+		assert_ne!(pivot(), greater(Targets::Minor));
+		assert_ne!(pivot(), greater(Targets::Patch));
+
+		assert_ne!(pivot(), less(Targets::Major));
+		assert_ne!(pivot(), less(Targets::Minor));
+		assert_ne!(pivot(), less(Targets::Patch));
+	}
+
+	#[test]
+	fn partial_ord() {
+		assert_eq!(
+			pivot().partial_cmp(&pivot()),
+			Some(std::cmp::Ordering::Equal)
+		);
+
+		assert_eq!(
+			less(Targets::Major).partial_cmp(&pivot()),
+			Some(std::cmp::Ordering::Less)
+		);
+		assert_eq!(
+			less(Targets::Minor).partial_cmp(&pivot()),
+			Some(std::cmp::Ordering::Less)
+		);
+		assert_eq!(
+			less(Targets::Patch).partial_cmp(&pivot()),
+			Some(std::cmp::Ordering::Less)
+		);
+
+		assert_eq!(
+			greater(Targets::Major).partial_cmp(&pivot()),
+			Some(std::cmp::Ordering::Greater)
+		);
+		assert_eq!(
+			greater(Targets::Minor).partial_cmp(&pivot()),
+			Some(std::cmp::Ordering::Greater)
+		);
+		assert_eq!(
+			greater(Targets::Patch).partial_cmp(&pivot()),
+			Some(std::cmp::Ordering::Greater)
+		);
+	}
+
+	#[test]
+	fn ord() {
+		assert_eq!(pivot().cmp(&pivot()), std::cmp::Ordering::Equal);
+
+		assert_eq!(less(Targets::Major).cmp(&pivot()), std::cmp::Ordering::Less);
+		assert_eq!(less(Targets::Minor).cmp(&pivot()), std::cmp::Ordering::Less);
+		assert_eq!(less(Targets::Patch).cmp(&pivot()), std::cmp::Ordering::Less);
+
+		assert_eq!(
+			greater(Targets::Major).cmp(&pivot()),
+			std::cmp::Ordering::Greater
+		);
+		assert_eq!(
+			greater(Targets::Minor).cmp(&pivot()),
+			std::cmp::Ordering::Greater
+		);
+		assert_eq!(
+			greater(Targets::Patch).cmp(&pivot()),
+			std::cmp::Ordering::Greater
+		);
+	}
 
 	fn fixture() -> Specified {
 		Specified::new(
