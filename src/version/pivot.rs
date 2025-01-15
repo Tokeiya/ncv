@@ -155,10 +155,16 @@ impl PartialOrd<Specified> for Pivot {
 		match m {
 			Ordering::Less => Some(Ordering::Less),
 			Ordering::Equal => {
-				if let (Some(n), Some(p)) = (n, p) {
+				if let Some(n) = n {
 					match n {
 						Ordering::Less => Some(Ordering::Less),
-						Ordering::Equal => Some(p),
+						Ordering::Equal => {
+							if p.is_some() {
+								p
+							} else {
+								None
+							}
+						}
 						Ordering::Greater => Some(Ordering::Greater),
 					}
 				} else {
@@ -182,15 +188,67 @@ impl PartialOrd<Specified> for Pivot {
 	}
 
 	fn gt(&self, other: &Specified) -> bool {
-		todo!()
+		if self.major.gt(other.major()) {
+			true
+		} else if let Some(result) = self.minor.partial_cmp(other.minor()) {
+			match result {
+				Ordering::Less => false,
+				Ordering::Equal => {
+					if let Some(result) = self.patch.partial_cmp(other.patch()) {
+						match result {
+							Ordering::Less => false,
+							Ordering::Equal => false,
+							Ordering::Greater => true,
+						}
+					} else {
+						false
+					}
+				}
+				Ordering::Greater => true,
+			}
+		} else {
+			false
+		}
 	}
 
 	fn le(&self, other: &Specified) -> bool {
-		todo!()
+		if let Some(ord) = self.partial_cmp(other) {
+			match ord {
+				Ordering::Less => true,
+				Ordering::Equal => true,
+				Ordering::Greater => false,
+			}
+		} else {
+			true
+		}
 	}
 
 	fn lt(&self, other: &Specified) -> bool {
-		todo!()
+		match self.major.cmp(other.major()) {
+			Ordering::Less => true,
+			Ordering::Equal => {
+				if let Some(ord) = self.minor.partial_cmp(other.minor()) {
+					match ord {
+						Ordering::Less => true,
+						Ordering::Equal => {
+							if let Some(ord) = self.patch.partial_cmp(other.patch()) {
+								match ord {
+									Ordering::Less => true,
+									Ordering::Equal => false,
+									Ordering::Greater => false,
+								}
+							} else {
+								false
+							}
+						}
+						Ordering::Greater => false,
+					}
+				} else {
+					false
+				}
+			}
+			Ordering::Greater => false,
+		}
 	}
 }
 
@@ -232,15 +290,6 @@ mod tests {
 		//less
 		let greater = Specified::from_str("42.43.45").unwrap();
 		assert_eq!(patch.partial_cmp(&greater), Some(Ordering::Less));
-	}
-
-	#[test]
-	fn foo() {
-		let minor = Pivot::from_str("42.43").unwrap();
-
-		dbg!(minor.ge(&Specified::from_str("42.44.90").unwrap()));
-		dbg!(minor.partial_cmp(&Specified::from_str("42.44.90").unwrap()));
-		assert!(!minor.ge(&Specified::from_str("42.44.90").unwrap()));
 	}
 
 	#[test]
@@ -320,6 +369,16 @@ mod tests {
 		assert!(minor.le(&Specified::from_str("43.0.0").unwrap()));
 
 		assert!(major.le(&Specified::from_str("43.0.0").unwrap()));
+	}
+
+	#[test]
+	fn foo() {
+		let patch = fixture();
+		let greater = Specified::from_str("43.0.0").unwrap();
+		let ord = patch.lt(&greater);
+
+		dbg!(42u32.lt(&43u32));
+		dbg!(ord);
 	}
 
 	#[test]
